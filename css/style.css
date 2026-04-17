@@ -470,3 +470,28 @@ input[type="range"]::-moz-range-thumb {
 }
 
 input[readonly] { cursor: default; }
+
+/* ==================== FIJAR FOOTER AL FONDO ==================== */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;          /* altura mínima = toda la ventana */
+    margin: 0;
+    padding: 1rem;
+}
+
+/* El contenedor principal ocupa el espacio disponible */
+#auth-screen, #main-app-content {
+    flex: 1;                    /* empuja el footer hacia abajo si hay poco contenido */
+}
+
+/* El footer queda al final sin necesidad de margin-top */
+.social-footer {
+    margin-top: 1rem;
+    text-align: center;
+    padding: 1rem;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    /* No necesita margin-top: auto porque el flex ya lo maneja */
+}

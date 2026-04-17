@@ -1,46 +1,76 @@
-# 🛡️ CryptoGen - Generador de Contraseñas Seguro
+🔐 CryptoGen Vault
+Tu Bóveda de Seguridad Local Definitiva
+CryptoGen Vault es una aplicación web de ciberseguridad diseñada para generar contraseñas criptográficamente fuertes y almacenarlas de forma segura, todo bajo un modelo Zero-Knowledge. Esto significa que tus datos nunca viajan por internet: se quedan en tu dispositivo, bajo tu control.
 
-CryptoGen es una aplicación web de alta seguridad diseñada con una estética Glassmorphism moderna. A diferencia de los generadores convencionales, CryptoGen utiliza la **Web Crypto API** nativa para garantizar que cada contraseña sea generada con entropía real y sea criptográficamente segura.
+✨ Características Principales
+Generador Criptográfico: Utiliza la Web Crypto API para garantizar una entropía real, superando a los generadores aleatorios convencionales.
 
-## ✨ Características Principales
+Almacenamiento Local Robusto: Implementación de IndexedDB para gestionar bases de datos en el navegador, permitiendo múltiples usuarios y persistencia de datos.
 
-- 🔒 **Seguridad de Grado Militar:** Generación de claves mediante `window.crypto.getRandomValues()`, evitando la predictibilidad de `Math.random()`.
-- 📊 **Análisis de Fuerza en Tiempo Real:** Integración con la librería `zxcvbn` para una evaluación precisa de la robustez de la contraseña.
-- 🌑 **Interfaz Glassmorphism:** Diseño visualmente atractivo con efectos de desenfoque, transparencias y acentos vibrantes.
-- 🗄️ **Bóveda Local:** Guarda y gestiona tus contraseñas directamente en el navegador de forma privada mediante LocalStorage.
-- 📤 **Exportación de Datos:** Permite descargar toda tu bóveda en un archivo portable `.json`.
-- 📱 **Mobile First:** Optimizado para un copiado fluido en dispositivos Android e iOS.
-- 🧩 **Arquitectura Modular:** Código organizado en módulos (Generación, Fuerza, Almacenamiento e Interfaz).
+Análisis de Seguridad: Integración con la librería zxcvbn para evaluar la fortaleza de las claves en tiempo real.
 
-## 🚀 Instalación y Uso
+Diseño Moderno: Interfaz Glassmorphism optimizada para una experiencia de usuario fluida y estética.
 
-Al ser una aplicación estática, no requiere servidores ni instalaciones complejas:
+Mobile Ready: Soporte completo para dispositivos móviles con sistema de copiado inteligente (fallback para Android).
 
-1. Clona este repositorio:
-   ```bash
-   git clone https://github.com/Neymors/CryptoGen
-   
-Abre el archivo index.html en cualquier navegador moderno.
+🛠️ Stack Tecnológico
+Lenguajes: HTML5, CSS3 (Variables modernas & Flexbox/Grid), JavaScript (ES6+ Modules).
 
-Configura la longitud, elige tus parámetros y genera una clave segura.
+Seguridad: Web Crypto API.
 
-🛠️ Estructura del Proyecto
-La estructura está diseñada para ser limpia y fácil de mantener:
+Base de Datos: IndexedDB (vía db-manager.js).
 
-index.html: Estructura base, controles de usuario y modales de interfaz.
+Análisis de Fuerza: zxcvbn.
 
-css/style.css: Estilos visuales, variables de color y animaciones.
+🚀 Cómo Empezar
+No necesitas instalar nada ni configurar servidores complejos. Al ser una herramienta puramente Client-Side:
 
-js/main.js: Controlador principal que gestiona los eventos del DOM y conecta los módulos.
+Clona el repositorio:
 
-js/crypto-core.js: El motor criptográfico de generación de caracteres.
+Bash
+git clone https://github.com/tu-usuario/cryptogen-vault.git
+Abre el archivo index.html en tu navegador preferido.
 
-vendor/zxcvbn.js: Librería externa para el cálculo de entropía de contraseñas.
+¡Listo! Crea tu cuenta maestra local y empieza a generar claves.
 
-🔐 Privacidad y Seguridad
-Ejecución Local: Ninguna contraseña se envía a servidores externos. Todo el procesamiento ocurre en el cliente.
+📂 Estructura del Proyecto
+Plaintext
+├── css/
+│   └── style.css          # Estilos Glassmorphism y layouts
+├── js/
+│   ├── main.js            # Lógica principal y control de la UI
+│   ├── crypto-core.js     # Motor de generación y entropía
+│   ├── auth-service.js    # Manejo de sesiones y registro
+│   └── db-manager.js      # Orquestador de IndexedDB
+└── index.html             # Estructura SPA (Single Page Application)
+🔒 Privacidad y Seguridad
+[!IMPORTANT]
+CryptoGen Vault no utiliza servidores externos.
 
-Sin Rastreo: No se utilizan cookies ni scripts de seguimiento.
+No hay API de terceros.
 
-Formato Abierto: Los datos se exportan en JSON estándar para que siempre seas dueño de tu información.
+No hay envío de telemetría.
 
+Tus contraseñas mueren con tu caché. > Se recomienda realizar exportaciones periódicas de tus credenciales si planeas limpiar los datos de tu navegador.
+
+🤝 Contribuciones
+¿Tienes una idea para mejorar la seguridad o el diseño? ¡Las sugerencias son bienvenidas!
+
+Haz un Fork del proyecto.
+
+Crea una rama para tu mejora (git checkout -b feature/mejora).
+
+Envía un Pull Request.
+
+Desarrollado con ❤️ para la comunidad de Ciberseguridad.
+
+🚀 Próxima Actualización (v2.1) — Coming Soon 🏗️
+Estamos trabajando en mejorar la portabilidad de tus datos. Muy pronto podrás:
+
+Gestión Manual de Credenciales: Añade tus contraseñas antiguas directamente a la bóveda de forma manual.
+
+Backup en JSON: Exporta toda tu base de datos local en un archivo .json cifrado.
+
+Importación Inteligente: ¿Cambiaste de navegador o dispositivo? Importa tu archivo JSON y recupera todas tus credenciales al instante.
+
+Esta función permitirá que, aunque limpies la caché de tu navegador, siempre tengas un respaldo físico de tu seguridad.

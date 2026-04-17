@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="CryptoGen Vault – Generador y gestor de contraseñas seguro con almacenamiento local cifrado (IndexedDB).">
+    <meta name="description"
+        content="CryptoGen Vault – Generador y gestor de contraseñas seguro con almacenamiento local cifrado (IndexedDB).">
     <meta name="theme-color" content="#0f172a">
     <title>CryptoGen Vault | Seguridad Local</title>
     <link rel="stylesheet" href="css/style.css">
@@ -11,6 +13,7 @@
     <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
 
 </head>
+
 <body>
 
     <!-- PANTALLA DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
@@ -19,6 +22,7 @@
             <h1>CryptoGen <span class="accent"></span></h1>
             <p class="subtitle">Almacenamiento cifrado · Solo en tu dispositivo</p>
         </header>
+        
 
         <!-- FORMULARIO DE LOGIN -->
         <div id="login-form" class="auth-form">
@@ -44,11 +48,13 @@
             </div>
             <div class="input-group">
                 <label for="reg-pass">Contraseña Maestra</label>
-                <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+                <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"
+                    required>
             </div>
             <div class="input-group">
                 <label for="reg-pass-confirm">Confirmar Contraseña</label>
-                <input type="password" id="reg-pass-confirm" placeholder="Repetí la contraseña" autocomplete="off" required>
+                <input type="password" id="reg-pass-confirm" placeholder="Repetí la contraseña" autocomplete="off"
+                    required>
             </div>
             <button id="register-btn" class="primary-btn">✨ Crear Bóveda</button>
             <p class="switch-form">¿Ya tenés cuenta? <span id="go-to-login" class="link">Iniciar sesión</span></p>
@@ -68,7 +74,8 @@
         <!-- GENERADOR DE CONTRASEÑAS -->
         <section class="generator-card">
             <div class="output-area">
-                <input type="text" id="password-output" readonly placeholder="Generá una contraseña segura" aria-label="Contraseña generada">
+                <input type="text" id="password-output" readonly placeholder="Generá una contraseña segura"
+                    aria-label="Contraseña generada">
                 <button id="copy-btn" class="icon-btn" title="Copiar al portapapeles">📋</button>
             </div>
 
@@ -83,7 +90,8 @@
             <div class="controls">
                 <div class="range-group">
                     <label>Longitud: <span id="length-val">16</span></label>
-                    <input type="range" id="length-slider" min="8" max="50" value="16" aria-label="Longitud de contraseña">
+                    <input type="range" id="length-slider" min="8" max="50" value="16"
+                        aria-label="Longitud de contraseña">
                 </div>
                 <button id="generate-btn" class="primary-btn">🎲 Generar Contraseña</button>
                 <button id="save-local" class="secondary-btn">💾 Guardar en Bóveda</button>
@@ -115,7 +123,17 @@
         </div>
     </div>
 
+    <!-- FOOTER -->
+    <footer class="social-footer">
+        <p>Desarrollado por <strong>Gaston Garcia</strong></p>
+        <div class="social-links">
+            <a href="https://github.com/gastongarcia" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://instagram.com/gastongarcia" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </div>
+    </footer>
+
     <!-- MÓDULO PRINCIPAL (type="module") -->
     <script type="module" src="./js/main.js"></script>
 </body>
+
 </html>
