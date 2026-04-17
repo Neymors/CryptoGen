@@ -1,96 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CryptoGen - Generador de Contraseñas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <meta name="description" content="CryptoGen Vault – Generador y gestor de contraseñas seguro con almacenamiento local cifrado (IndexedDB).">
+    <meta name="theme-color" content="#0f172a">
+    <title>CryptoGen Vault | Seguridad Local</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
     <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
-</head>
 
+</head>
 <body>
-    <main class="app-container">
-        <header>
-            <h1>CryptoGen</h1>
-            <p>Generación segura vía Web Crypto API</p>
+
+    <!-- PANTALLA DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+    <section id="auth-screen" class="app-container">
+        <header class="auth-header">
+            <h1>CryptoGen <span class="accent"></span></h1>
+            <p class="subtitle">Almacenamiento cifrado · Solo en tu dispositivo</p>
         </header>
 
-        <section class="display-section">
-            <div class="password-screen">
-                <input type="text" id="password-output" readonly placeholder="P4$$w0rd">
-                <button id="copy-btn" title="Copiar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                </button>
+        <!-- FORMULARIO DE LOGIN -->
+        <div id="login-form" class="auth-form">
+            <h2>🔐 Iniciar Sesión</h2>
+            <div class="input-group">
+                <label for="login-user">Usuario</label>
+                <input type="text" id="login-user" placeholder="Ej: admin" autocomplete="username" required>
             </div>
-
-            <div class="strength-meter">
-                <div id="strength-bar" class="bar"></div>
-                <span id="strength-text">Fuerza: ---</span>
+            <div class="input-group">
+                <label for="login-pass">Contraseña Maestra</label>
+                <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
             </div>
-        </section>
-
-        <section class="controls">
-            <div class="setting">
-                <div class="label-row">
-                    <label for="length-slider">Longitud</label>
-                    <span id="length-val">16</span>
-                </div>
-                <input type="range" id="length-slider" min="8" max="64" value="16">
-            </div>
-
-            <div class="options-grid">
-                <label class="check-container">
-                    Mayúsculas
-                    <input type="checkbox" id="uppercase" checked>
-                </label>
-                <label class="check-container">
-                    Símbolos
-                    <input type="checkbox" id="symbols" checked>
-                </label>
-            </div>
-
-            <button id="generate-btn" class="primary-btn">Generar Contraseña</button>
-        </section>
-
-        <footer class="vault-actions">
-            <button id="save-local" class="secondary-btn">Guardar en Bóveda</button>
-            <button id="export-encrypted" class="secondary-btn">Exportar (.json)</button>
-        </footer>
-
-        <section id="vault-list-container" class="vault-list">
-            <div class="vault-header">
-                <h3>Contraseñas Guardadas</h3>
-                <button id="clear-vault" class="text-btn">Limpiar todo</button>
-            </div>
-            <div id="vault-items">
-                <!-- Aquí se renderizan los ítems guardados -->
-            </div>
-        </section>
-
-        <!-- Modal para guardar contraseña (sin clase hidden para que funcione) -->
-        <div id="save-modal" class="modal-overlay">
-            <div class="modal-content">
-                <h3>Guardar Contraseña</h3>
-                <p>Escribe un nombre para identificar este registro</p>
-                <input type="text" id="save-name-input" placeholder="Ej: Mi cuenta de Instagram" autocomplete="off">
-                <div class="modal-actions">
-                    <button id="cancel-save" class="secondary-btn">Cancelar</button>
-                    <button id="confirm-save" class="primary-btn">Confirmar</button>
-                </div>
-            </div>
+            <button id="login-btn" class="primary-btn">🚪 Entrar a la Bóveda</button>
+            <p class="switch-form">¿No tenés cuenta? <span id="go-to-register" class="link">Crear nueva</span></p>
         </div>
+
+        <!-- FORMULARIO DE REGISTRO (CREAR BÓVEDA) -->
+        <div id="register-form" class="auth-form hidden">
+            <h2>🛡️ Crear Cuenta</h2>
+            <div class="input-group">
+                <label for="reg-user">Usuario</label>
+                <input type="text" id="reg-user" placeholder="Mínimo 3 caracteres" autocomplete="off" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-pass">Contraseña Maestra</label>
+                <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-pass-confirm">Confirmar Contraseña</label>
+                <input type="password" id="reg-pass-confirm" placeholder="Repetí la contraseña" autocomplete="off" required>
+            </div>
+            <button id="register-btn" class="primary-btn">✨ Crear Bóveda</button>
+            <p class="switch-form">¿Ya tenés cuenta? <span id="go-to-login" class="link">Iniciar sesión</span></p>
+        </div>
+    </section>
+
+    <!-- APLICACIÓN PRINCIPAL (BÓVEDA + GENERADOR) -->
+    <main id="main-app-content" class="app-container hidden">
+        <nav class="dashboard-nav">
+            <div class="user-info">
+                <span>🔒 Bóveda activa</span>
+                <span id="current-user-display" class="username-badge"></span>
+            </div>
+            <button id="logout-btn" class="text-btn" aria-label="Cerrar sesión">🚪 Cerrar Sesión</button>
+        </nav>
+
+        <!-- GENERADOR DE CONTRASEÑAS -->
+        <section class="generator-card">
+            <div class="output-area">
+                <input type="text" id="password-output" readonly placeholder="Generá una contraseña segura" aria-label="Contraseña generada">
+                <button id="copy-btn" class="icon-btn" title="Copiar al portapapeles">📋</button>
+            </div>
+
+            <!-- Medidor de fortaleza (se actualiza desde main.js) -->
+            <div class="strength-meter-container">
+                <div class="strength-meter">
+                    <div id="strength-bar" class="bar"></div>
+                </div>
+                <span id="strength-text">⚡ Fuerza: ---</span>
+            </div>
+
+            <div class="controls">
+                <div class="range-group">
+                    <label>Longitud: <span id="length-val">16</span></label>
+                    <input type="range" id="length-slider" min="8" max="50" value="16" aria-label="Longitud de contraseña">
+                </div>
+                <button id="generate-btn" class="primary-btn">🎲 Generar Contraseña</button>
+                <button id="save-local" class="secondary-btn">💾 Guardar en Bóveda</button>
+            </div>
+        </section>
+
+        <!-- LISTADO DE CREDENCIALES GUARDADAS -->
+        <section class="vault-section">
+            <h3>📦 Tus Credenciales</h3>
+            <div id="vault-items" class="vault-grid">
+                <p class="empty-msg">Todavía no guardaste ninguna contraseña.</p>
+            </div>
+        </section>
     </main>
 
-    <script type="module" src="js/main.js"></script>
-</body>
+    <!-- MODAL PARA GUARDAR NUEVA CREDENCIAL -->
+    <div id="save-modal" class="modal-overlay">
+        <div class="modal-card" role="dialog" aria-labelledby="modal-title">
+            <h3 id="modal-title">📝 Nueva Credencial</h3>
+            <div class="modal-fields">
+                <input type="text" id="save-service" placeholder="Servicio (ej: GitHub, Gmail)" autocomplete="off">
+                <input type="text" id="save-user" placeholder="Usuario o Email" autocomplete="off">
+                <input type="text" id="save-pass" readonly placeholder="Contraseña generada">
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-save" class="secondary-btn">Cancelar</button>
+                <button id="confirm-save" class="primary-btn">Confirmar</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- MÓDULO PRINCIPAL (type="module") -->
+    <script type="module" src="./js/main.js"></script>
+</body>
 </html>

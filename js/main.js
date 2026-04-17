@@ -1,199 +1,48 @@
-import { generatePassword } from "./crypto-core.js";
+// main.js - Versión definitiva con copiado universal y sin errores
 
-// --- ELEMENTOS DEL DOM ---
-const slider = document.getElementById("length-slider");
-const lengthVal = document.getElementById("length-val");
+import { generatePassword, checkStrength } from "./crypto/crypto-core.js";
+import { authService } from "./auth/auth-service.js";
+import { dbManager } from "./database/db-manager.js";
+
+// ==================== ELEMENTOS DOM ====================
+const authScreen = document.getElementById('auth-screen');
+const mainAppContent = document.getElementById('main-app-content');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const goToRegister = document.getElementById('go-to-register');
+const goToLogin = document.getElementById('go-to-login');
+const loginBtn = document.getElementById('login-btn');
+const registerBtn = document.getElementById('register-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const currentUserDisplay = document.getElementById('current-user-display');
+
+// Generador
+const lengthSlider = document.getElementById('length-slider');
+const lengthVal = document.getElementById('length-val');
 const passwordOutput = document.getElementById('password-output');
-const copyBtn = document.getElementById('copy-btn');
 const generateBtn = document.getElementById('generate-btn');
-
-// Elementos de Fuerza
+const copyBtn = document.getElementById('copy-btn');
 const strengthBar = document.getElementById('strength-bar');
 const strengthText = document.getElementById('strength-text');
 
-// Elementos de la Bóveda y Modal
-const saveBtn = document.getElementById('save-local');
-const exportBtn = document.getElementById('export-encrypted');
-const vaultItems = document.getElementById('vault-items');
-const clearVaultBtn = document.getElementById('clear-vault');
-
+// Bóveda y modal
+const saveLocalBtn = document.getElementById('save-local');
 const saveModal = document.getElementById('save-modal');
-const saveInput = document.getElementById('save-name-input');
 const confirmSaveBtn = document.getElementById('confirm-save');
 const cancelSaveBtn = document.getElementById('cancel-save');
+const saveService = document.getElementById('save-service');
+const saveUser = document.getElementById('save-user');
+const savePass = document.getElementById('save-pass');
+const vaultItems = document.getElementById('vault-items');
 
-// Checks
-const uppercaseCheck = document.getElementById('uppercase');
-const symbolsCheck = document.getElementById('symbols');
-
-// --- 1. LÓGICA DE INTERFAZ Y FUERZA ---
-
-slider.addEventListener('input', () => {
-    lengthVal.textContent = slider.value;
-});
-
-function updateStrength(password) {
-    if (!password) {
-        strengthBar.style.width = "0%";
-        strengthText.textContent = "Fuerza: ---";
-        return;
-    }
-
-    const result = zxcvbn(password);
-    const score = result.score; 
-
-    const levels = [
-        { width: "20%", color: "var(--weak)", text: "Muy Débil" },
-        { width: "40%", color: "var(--weak)", text: "Débil" },
-        { width: "60%", color: "var(--medium)", text: "Media" },
-        { width: "80%", color: "var(--strong)", text: "Fuerte" },
-        { width: "100%", color: "var(--strong)", text: "Muy Fuerte" }
-    ];
-
-    const level = levels[score];
-    strengthBar.style.width = level.width;
-    strengthBar.style.backgroundColor = level.color;
-    strengthText.textContent = `Fuerza: ${level.text}`;
+// ==================== UTILIDADES ====================
+function showAlert(msg, isError = true) {
+    alert(msg);
 }
 
-// --- 2. GENERACIÓN Y COPIADO (MEJORADO PARA MÓVILES) ---
-
-const handleGenerate = () => {
-    const length = parseInt(slider.value);
-    const options = {
-        uppercase: uppercaseCheck.checked,
-        symbols: symbolsCheck.checked,
-        numbers: true 
-    };
-
-    const newPassword = generatePassword(length, options);
-    passwordOutput.value = newPassword;
-    updateStrength(newPassword);
-};
-
-// Función auxiliar para notificaciones tipo toast
-function showToast(message, isError = false) {
-    let toast = document.querySelector('.custom-toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.className = 'custom-toast';
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.left = '50%';
-        toast.style.transform = 'translateX(-50%)';
-        toast.style.backgroundColor = 'rgba(0,0,0,0.85)';
-        toast.style.color = 'white';
-        toast.style.padding = '8px 16px';
-        toast.style.borderRadius = '40px';
-        toast.style.fontSize = '0.85rem';
-        toast.style.zIndex = '2000';
-        toast.style.backdropFilter = 'blur(8px)';
-        toast.style.pointerEvents = 'none';
-        toast.style.transition = 'opacity 0.2s ease';
-        toast.style.opacity = '0';
-        document.body.appendChild(toast);
-    }
-    
-    toast.textContent = message;
-    if (isError) toast.style.backgroundColor = 'rgba(239,68,68,0.9)';
-    else toast.style.backgroundColor = 'rgba(0,0,0,0.85)';
-    
-    toast.style.opacity = '1';
-    setTimeout(() => {
-        toast.style.opacity = '0';
-    }, 1800);
-}
-
-copyBtn.addEventListener('click', async () => {
-    const password = passwordOutput.value;
-    if (!password) return;
-
-    // Intento con la API moderna (recomendada en HTTPS/contexto seguro)
-    const copyModern = async () => {
-        if (navigator.clipboard && window.isSecureContext) {
-            try {
-                await navigator.clipboard.writeText(password);
-                return true;
-            } catch (err) {
-                console.warn('Clipboard API falló:', err);
-                return false;
-            }
-        }
-        return false;
-    };
-
-    // Fallback clásico (funciona en móviles y navegadores sin permisos)
-    const copyFallback = () => {
-        const textarea = document.createElement('textarea');
-        textarea.value = password;
-        textarea.style.position = 'fixed';
-        textarea.style.top = '-9999px';
-        textarea.style.left = '-9999px';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        textarea.setSelectionRange(0, password.length);
-        let success = false;
-        try {
-            success = document.execCommand('copy');
-        } catch (err) {
-            console.error('Fallback copy falló:', err);
-        }
-        document.body.removeChild(textarea);
-        return success;
-    };
-
-    // Ejecutar copiado
-    let copied = await copyModern();
-    if (!copied) copied = copyFallback();
-
-    // Feedback visual
-    const originalIcon = copyBtn.innerHTML;
-    if (copied) {
-        copyBtn.innerHTML = '<span>✅</span>';
-        showToast('¡Contraseña copiada!');
-    } else {
-        copyBtn.innerHTML = '<span>❌</span>';
-        showToast('No se pudo copiar', true);
-    }
-    setTimeout(() => {
-        copyBtn.innerHTML = originalIcon;
-    }, 1500);
-});
-
-// --- 3. GESTIÓN DE LA BÓVEDA (MODAL) ---
-
-function renderVault() {
-    const vault = JSON.parse(localStorage.getItem('crypto_vault')) || [];
-    vaultItems.innerHTML = '';
-
-    vault.forEach(entry => {
-        const div = document.createElement('div');
-        div.className = 'vault-item';
-        div.innerHTML = `
-            <div class="vault-info">
-                <b>${escapeHtml(entry.name)}</b>
-                <span>${entry.date}</span>
-            </div>
-            <div class="vault-actions-inline">
-                <code>${entry.password.substring(0, 8)}...</code>
-                <button class="delete-btn" data-id="${entry.id}">✕</button>
-            </div>
-        `;
-        vaultItems.appendChild(div);
-    });
-
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.onclick = (e) => {
-            const id = parseInt(e.currentTarget.getAttribute('data-id'));
-            deleteItem(id);
-        };
-    });
-}
-
-// Pequeña función para evitar XSS en nombres
 function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function(m) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function (m) {
         if (m === '&') return '&amp;';
         if (m === '<') return '&lt;';
         if (m === '>') return '&gt;';
@@ -201,88 +50,269 @@ function escapeHtml(str) {
     });
 }
 
-function deleteItem(id) {
-    let vault = JSON.parse(localStorage.getItem('crypto_vault')) || [];
-    vault = vault.filter(item => item.id !== id);
-    localStorage.setItem('crypto_vault', JSON.stringify(vault));
-    renderVault();
+// ==================== FUNCIÓN UNIVERSAL DE COPIADO (CON FALLBACK) ====================
+async function copyToClipboard(text, buttonElement, successMessage = "✅ Copiado") {
+    if (!text) return false;
+    
+    // Guardar texto original del botón
+    const originalText = buttonElement.textContent;
+    
+    // Intentar método moderno
+    try {
+        await navigator.clipboard.writeText(text);
+        buttonElement.textContent = successMessage;
+        setTimeout(() => buttonElement.textContent = originalText, 1500);
+        return true;
+    } catch (err) {
+        // Fallback para Android/HTTP (usando textarea y execCommand)
+        try {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            textArea.setSelectionRange(0, 99999);
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                buttonElement.textContent = successMessage;
+                setTimeout(() => buttonElement.textContent = originalText, 1500);
+                return true;
+            } else {
+                showAlert("No se pudo copiar. Copiá manualmente.");
+                return false;
+            }
+        } catch (e) {
+            showAlert("Error al copiar. Copiá manualmente.");
+            return false;
+        }
+    }
 }
 
-// Abrir Modal
-saveBtn.addEventListener('click', () => {
-    if (!passwordOutput.value) {
-        showToast('Primero genera una contraseña', true);
+// Actualizar medidor de fortaleza
+function updateStrengthMeter(password) {
+    if (!password) {
+        strengthBar.style.width = '0%';
+        strengthBar.className = 'bar';
+        strengthText.textContent = '⚡ Fuerza: ---';
         return;
     }
-    saveModal.classList.add('active');
-    saveInput.value = '';
-    saveInput.focus();
+    const result = checkStrength(password);
+    const score = result.score;
+    let width = (score + 1) * 20;
+    let color = '';
+    let label = '';
+    switch (score) {
+        case 0: color = '#ef4444'; label = 'Muy débil'; break;
+        case 1: color = '#f97316'; label = 'Débil'; break;
+        case 2: color = '#f59e0b'; label = 'Moderada'; break;
+        case 3: color = '#10b981'; label = 'Fuerte'; break;
+        case 4: color = '#06b6d4'; label = 'Excelente'; break;
+        default: color = '#94a3b8'; label = 'Desconocida';
+    }
+    strengthBar.style.width = `${width}%`;
+    strengthBar.style.backgroundColor = color;
+    strengthBar.className = 'bar';
+    strengthText.textContent = `🔒 Fuerza: ${label} (${result.isStrong ? '✅ segura' : '⚠️ mejorable'})`;
+}
+
+// ==================== NAVEGACIÓN ENTRE FORMULARIOS ====================
+goToRegister.addEventListener('click', () => {
+    loginForm.classList.add('hidden');
+    registerForm.classList.remove('hidden');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
 });
 
-// Cerrar Modal
+goToLogin.addEventListener('click', () => {
+    registerForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+    document.getElementById('reg-user').value = '';
+    document.getElementById('reg-pass').value = '';
+    document.getElementById('reg-pass-confirm').value = '';
+});
+
+// ==================== AUTENTICACIÓN ====================
+loginBtn.addEventListener('click', async () => {
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    if (!user || !pass) {
+        return showAlert("Completá ambos campos.");
+    }
+    const success = await authService.login(user, pass);
+    if (success) {
+        authScreen.classList.add('hidden');
+        mainAppContent.classList.remove('hidden');
+        if (currentUserDisplay) currentUserDisplay.textContent = user;
+        renderVault();
+        generateNewPassword();
+    } else {
+        showAlert("Usuario o contraseña incorrectos.");
+    }
+});
+
+registerBtn.addEventListener('click', async () => {
+    const user = document.getElementById('reg-user').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+    const confirm = document.getElementById('reg-pass-confirm').value;
+    if (!user || !pass || !confirm) {
+        return showAlert("Completá todos los campos.");
+    }
+    if (user.length < 3) return showAlert("El usuario debe tener al menos 3 caracteres.");
+    if (pass.length < 6) return showAlert("La contraseña debe tener al menos 6 caracteres.");
+    if (pass !== confirm) return showAlert("Las contraseñas no coinciden.");
+    const result = await authService.register(user, pass);
+    if (result.success) {
+        showAlert("✅ ¡Cuenta creada con éxito! Ahora iniciá sesión.", false);
+        registerForm.classList.add('hidden');
+        loginForm.classList.remove('hidden');
+        document.getElementById('login-user').value = user;
+        document.getElementById('login-pass').value = '';
+    } else {
+        showAlert(result.message || "Error al crear la cuenta.");
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    authService.logout();
+});
+
+// ==================== GENERADOR DE CONTRASEÑAS ====================
+function generateNewPassword() {
+    const length = parseInt(lengthSlider.value);
+    const newPass = generatePassword(length, {
+        uppercase: true,
+        numbers: true,
+        symbols: true,
+        excludeAmbiguous: false,
+        minNumbers: 1,
+        minSymbols: 1
+    });
+    passwordOutput.value = newPass;
+    updateStrengthMeter(newPass);
+    if (savePass) savePass.value = newPass;
+}
+
+lengthSlider.addEventListener('input', (e) => {
+    lengthVal.textContent = e.target.value;
+    generateNewPassword();
+});
+
+generateBtn.addEventListener('click', generateNewPassword);
+
+// Botón copiar principal - usa la función universal
+copyBtn.addEventListener('click', () => {
+    const password = passwordOutput.value;
+    if (!password) {
+        showAlert("No hay contraseña generada.");
+        return;
+    }
+    copyToClipboard(password, copyBtn, "✅ Copiado");
+});
+
+// ==================== BÓVEDA (IndexedDB) ====================
+async function renderVault() {
+    const currentUser = sessionStorage.getItem("current_user");
+    if (!currentUser) return;
+    const items = await dbManager.getAll(currentUser);
+    vaultItems.innerHTML = '';
+    if (items.length === 0) {
+        vaultItems.innerHTML = '<p class="empty-msg">📭 No hay credenciales guardadas aún.</p>';
+        return;
+    }
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'vault-item';
+        div.innerHTML = `
+            <div class="vault-info">
+                <strong>${escapeHtml(item.service)}</strong>
+                <span class="vault-user">${escapeHtml(item.user)}</span>
+            </div>
+            <div class="vault-actions-buttons">
+                <button class="copy-pass-btn" data-pass="${escapeHtml(item.pass)}">📋 Copiar</button>
+                <button class="delete-vault-btn" data-id="${item.id}">🗑️</button>
+            </div>
+        `;
+        vaultItems.appendChild(div);
+    });
+
+    // Asignar eventos a los botones de copiar de cada credencial
+    document.querySelectorAll('.copy-pass-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const pass = btn.getAttribute('data-pass');
+            if (pass) {
+                await copyToClipboard(pass, btn, "✅ Copiado");
+            }
+        });
+    });
+
+    // Eventos para eliminar credencial
+    document.querySelectorAll('.delete-vault-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            if (confirm("¿Eliminar esta credencial permanentemente?")) {
+                await dbManager.deleteCredential(id);
+                renderVault();
+            }
+        });
+    });
+}
+
+// ==================== MODAL GUARDAR ====================
+saveLocalBtn.addEventListener('click', () => {
+    const currentPass = passwordOutput.value;
+    if (!currentPass) {
+        return showAlert("Primero generá una contraseña.");
+    }
+    savePass.value = currentPass;
+    saveService.value = '';
+    saveUser.value = '';
+    saveModal.classList.add('active');
+});
+
 cancelSaveBtn.addEventListener('click', () => {
     saveModal.classList.remove('active');
-    saveInput.value = '';
 });
 
-// Confirmar Guardado
-confirmSaveBtn.addEventListener('click', () => {
-    const name = saveInput.value.trim();
-    if (!name) {
-        showToast('Escribe un nombre para guardar', true);
-        return;
+confirmSaveBtn.addEventListener('click', async () => {
+    const service = saveService.value.trim();
+    const user = saveUser.value.trim();
+    const pass = savePass.value.trim();
+    const currentUser = sessionStorage.getItem("current_user");
+
+    if (!service || !user) {
+        return showAlert("Completá el servicio y el usuario.");
     }
+    if (!pass) return showAlert("No hay contraseña para guardar.");
 
-    const newEntry = {
+    const entry = {
         id: Date.now(),
-        name: name,
-        password: passwordOutput.value,
-        date: new Date().toLocaleDateString()
+        userId: currentUser,
+        service: service,
+        user: user,
+        pass: pass
     };
-
-    const vault = JSON.parse(localStorage.getItem('crypto_vault')) || [];
-    vault.push(newEntry);
-    localStorage.setItem('crypto_vault', JSON.stringify(vault));
-    
-    saveInput.value = '';
+    await dbManager.saveCredential(entry);
     saveModal.classList.remove('active');
     renderVault();
-    showToast('Guardado en la bóveda');
+    showAlert("✅ Credencial guardada correctamente.", false);
 });
 
-// Limpiar toda la bóveda
-clearVaultBtn.addEventListener('click', () => {
-    if (confirm('¿Eliminar todas las contraseñas guardadas?')) {
-        localStorage.removeItem('crypto_vault');
-        renderVault();
-        showToast('Bóveda vaciada');
-    }
+// Cerrar modal haciendo clic fuera
+saveModal.addEventListener('click', (e) => {
+    if (e.target === saveModal) saveModal.classList.remove('active');
 });
 
-// --- 4. EXPORTAR A JSON ---
-exportBtn.addEventListener('click', () => {
-    const vault = localStorage.getItem('crypto_vault');
-    if (!vault || vault === '[]') {
-        showToast('No hay contraseñas para exportar', true);
-        return;
-    }
-
-    const blob = new Blob([vault], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `boveda_cryptogen_${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Exportado correctamente');
-});
-
-// --- INICIALIZACIÓN ---
-generateBtn.addEventListener('click', handleGenerate);
-document.addEventListener('DOMContentLoaded', () => {
-    renderVault();
-    // Generar una contraseña por defecto al cargar
-    handleGenerate();
-});
+// ==================== INICIALIZACIÓN ====================
+if (sessionStorage.getItem("is_auth") === "true") {
+    sessionStorage.clear();
+}
+authScreen.classList.remove('hidden');
+mainAppContent.classList.add('hidden');
+generateNewPassword();
